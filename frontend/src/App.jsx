@@ -1,27 +1,76 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
+
+const API_URL = 'http://localhost:8080/api/todos'
 
 function App() {
   const [todos, setTodos] = useState([])
   const [inputValue, setInputValue] = useState('')
 
-  const addTodo = () => {
-    if (inputValue.trim() !== '') {
-      setTodos([...todos, { id: Date.now(), text: inputValue, completed: false }])
-      setInputValue('')
+  useEffect(() => {
+    fetchTodos()
+  }, [])
+
+  const fetchTodos = async () => {
+    try {
+      const response = await fetch(API_URL)
+      const data = await response.json()
+      setTodos(data)
+    } catch (error) {
+      console.error('Error fetching todos:', error)
     }
   }
 
-  const toggleTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    )
+  const addTodo = async () => {
+    if (inputValue.trim() !== '') {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: inputValue, completed: false }),
+        })
+        const newTodo = await response.json()
+        setTodos([...todos, newTodo])
+        setInputValue('')
+      } catch (error) {
+        console.error('Error adding todo:', error)
+      }
+    }
   }
 
-  const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id))
+  const toggleTodo = async (id) => {
+    const todoToToggle = todos.find((todo) => todo.id === id)
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...todoToToggle,
+          completed: !todoToToggle.completed,
+        }),
+      })
+      const updatedTodo = await response.json()
+      setTodos(
+        todos.map((todo) => (todo.id === id ? updatedTodo : todo))
+      )
+    } catch (error) {
+      console.error('Error toggling todo:', error)
+    }
+  }
+
+  const deleteTodo = async (id) => {
+    try {
+      await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+      })
+      setTodos(todos.filter((todo) => todo.id !== id))
+    } catch (error) {
+      console.error('Error deleting todo:', error)
+    }
   }
 
   const handleKeyPress = (e) => {
