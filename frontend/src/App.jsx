@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PostList from './components/PostList';
+import PostForm from './components/PostForm';
+import PostDetail from './components/PostDetail';
 import './App.css';
 
 function App() {
@@ -17,9 +19,9 @@ function App() {
         <main className="content">
           <Routes>
             <Route path="/" element={<PostList />} />
-            {/* 추가 라우트는 3, 4단계에서 구현 예정 */}
-            <Route path="/posts/:id" element={<div>상세 보기 화면 (준비 중)</div>} />
-            <Route path="/write" element={<div>글쓰기 화면 (준비 중)</div>} />
+            <Route path="/posts/:id" element={<PostDetail />} />
+            <Route path="/write" element={<PostForm />} />
+            <Route path="/edit/:id" element={<PostForm />} />
           </Routes>
         </main>
 
